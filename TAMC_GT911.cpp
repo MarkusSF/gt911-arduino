@@ -2,29 +2,31 @@
 #include <TAMC_GT911.h>
 #include <Wire.h>
 
-TAMC_GT911::TAMC_GT911(uint8_t _sda, uint8_t _scl, uint8_t _int, uint8_t _rst, uint16_t _width, uint16_t _height) :
-  pinSda(_sda), pinScl(_scl), pinInt(_int), pinRst(_rst), width(_width), height(_height) {
-
+TAMC_GT911::TAMC_GT911(uint16_t _width, uint16_t _height,uint8_t _addr, TwoWire &bus) {
+  this->width=_width;
+  this->height=_height;
+  this->addr=_addr;
+  this->_wire=&bus;
 }
 
-void TAMC_GT911::begin(uint8_t _addr) {
-  addr = _addr;
-  Wire.begin(pinSda, pinScl);
+void TAMC_GT911::begin() {
+
+ //Wire.begin(pinSda, pinScl);
   reset();
 }
 void TAMC_GT911::reset() {
-  pinMode(pinInt, OUTPUT);
-  pinMode(pinRst, OUTPUT);
-  digitalWrite(pinInt, 0);
-  digitalWrite(pinRst, 0);
-  delay(10);
-  digitalWrite(pinInt, addr==GT911_ADDR2);
-  delay(1);
-  digitalWrite(pinRst, 1);
-  delay(5);
-  digitalWrite(pinInt, 0);
-  delay(50);
-  pinMode(pinInt, INPUT);
+  // pinMode(pinInt, OUTPUT);
+  // pinMode(pinRst, OUTPUT);
+  // digitalWrite(pinInt, 0);
+  // digitalWrite(pinRst, 0);
+  // delay(10);
+  // digitalWrite(pinInt, addr==GT911_ADDR2);
+  // delay(1);
+  // digitalWrite(pinRst, 1);
+  // delay(5);
+  // digitalWrite(pinInt, 0);
+  // delay(50);
+  // pinMode(pinInt, INPUT);
   // attachInterrupt(pinInt, TAMC_GT911::onInterrupt, RISING);
   delay(50);
   readBlockData(configBuf, GT911_CONFIG_START, GT911_CONFIG_SIZE);
@@ -117,40 +119,41 @@ TP_Point TAMC_GT911::readPoint(uint8_t *data) {
   return TP_Point(id, x, y, size);
 }
 void TAMC_GT911::writeByteData(uint16_t reg, uint8_t val) {
-  Wire.beginTransmission(addr);
-  Wire.write(highByte(reg));
-  Wire.write(lowByte(reg));
-  Wire.write(val);
-  Wire.endTransmission();
+  
+  _wire->beginTransmission(addr);
+  _wire->write(highByte(reg));
+  _wire->write(lowByte(reg));
+  _wire->write(val);
+  _wire->endTransmission();
 }
 uint8_t TAMC_GT911::readByteData(uint16_t reg) {
   uint8_t x;
-  Wire.beginTransmission(addr);
-  Wire.write(highByte(reg));
-  Wire.write(lowByte(reg));
-  Wire.endTransmission();
-  Wire.requestFrom(addr, (uint8_t)1);
-  x = Wire.read();
+  _wire->beginTransmission(addr);
+  _wire->write(highByte(reg));
+  _wire->write(lowByte(reg));
+  _wire->endTransmission();
+  _wire->requestFrom(addr, (uint8_t)1);
+  x = _wire->read();
   return x;
 }
 void TAMC_GT911::writeBlockData(uint16_t reg, uint8_t *val, uint8_t size) {
-  Wire.beginTransmission(addr);
-  Wire.write(highByte(reg));
-  Wire.write(lowByte(reg));
+  _wire->beginTransmission(addr);
+  _wire->write(highByte(reg));
+  _wire->write(lowByte(reg));
   // Wire.write(val, size);
   for (uint8_t i=0; i<size; i++) {
-    Wire.write(val[i]);
+    _wire->write(val[i]);
   }
-  Wire.endTransmission();
+  _wire->endTransmission();
 }
 void TAMC_GT911::readBlockData(uint8_t *buf, uint16_t reg, uint8_t size) {
-  Wire.beginTransmission(addr);
-  Wire.write(highByte(reg));
-  Wire.write(lowByte(reg));
-  Wire.endTransmission();
-  Wire.requestFrom(addr, size);
+  _wire->beginTransmission(addr);
+  _wire->write(highByte(reg));
+  _wire->write(lowByte(reg));
+  _wire->endTransmission();
+  _wire->requestFrom(addr, size);
   for (uint8_t i=0; i<size; i++) {
-    buf[i] = Wire.read();
+    buf[i] = _wire->read();
   }
 }
 TP_Point::TP_Point(void) {

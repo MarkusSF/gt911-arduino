@@ -150,8 +150,8 @@ class TP_Point {
 
 class TAMC_GT911 {
   public:
-    TAMC_GT911(uint8_t _sda, uint8_t _scl, uint8_t _int, uint8_t _rst, uint16_t _width, uint16_t _height);
-    void begin(uint8_t _addr=GT911_ADDR1);
+    TAMC_GT911(uint16_t _width, uint16_t _height,uint8_t _addr=GT911_ADDR1, TwoWire &bus=Wire);
+    void begin();
     void reset();
     void setRotation(uint8_t rot);
     void setResolution(uint16_t _width, uint16_t _height);
@@ -176,13 +176,16 @@ class TAMC_GT911 {
     void readBlockData(uint8_t *buf, uint16_t reg, uint8_t size);
     uint8_t rotation = ROTATION_NORMAL;
     uint8_t addr;
-    uint8_t pinSda;
-    uint8_t pinScl;
-    uint8_t pinInt;
-    uint8_t pinRst;
+    // uint8_t pinSda;
+    // uint8_t pinScl;
+    // uint8_t pinInt;
+    // uint8_t pinRst;
     uint16_t width;
     uint16_t height;
     uint8_t configBuf[GT911_CONFIG_SIZE];
+
+    TwoWire *_wire;
+    uint8_t _addr;
     // uint8_t *configBuf;
 };
 
